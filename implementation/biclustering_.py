@@ -16,6 +16,18 @@ class Biclustering:
     def mean_sqaure_residue(
         self, start: tuple, submatrix, submatrix_mean: float
     ) -> float:
+        """
+        Method to calculate mean square residue of a given submatrix at a specific start point. The idea behind this method is to make
+        the calculation reusable all throughout the algorithms.
+
+        Args:
+            start (tuple): The starting point of the submatrix. 
+            submatrix (_type_): the given bicluster matrix.
+            submatrix_mean (float): the bicluster matrix mean.
+
+        Returns:
+            float: mean square residue
+        """
         I, J = submatrix.shape[0], submatrix.shape[1]
         _i, _j = start
         element = submatrix[_i, _j]
@@ -32,7 +44,7 @@ class Biclustering:
             submatrix (_type_): submatrix : The bicluster matrix on which we want to calculate the mean square residue score.
 
         Returns:
-            Float : The H(I,J) mean square residue score 
+            Float : The H(I,J) mean square residue score.
         """
         n, m = submatrix.shape[0], submatrix.shape[1]
         submatrix_mean = np.mean(submatrix)
@@ -99,3 +111,4 @@ class Biclustering:
         return updated_submatrix
     
     def multiple_node_deletion(self, submatrix):
+        
