@@ -5,40 +5,19 @@ import pandas as pd
 class Biclustering:
     def __init__(
         self,
-        sigma: int,
-        alpha: int,
-        iterations: int = 100,
+        sigma: float,
+        alpha: float,
+        nb_biclusters: int = 3,
     ) -> tuple:
-        self.iterations = iterations
+        self.nb_biclusters = nb_biclusters
         self.sigma = sigma
         self.alpha = alpha
+        self.biclusters = []
 
-    def mean_sqaure_residue(
-        self, start: tuple, submatrix, submatrix_mean: float
-    ) -> float:
+    def msr_score(self, submatrix, rows, cols):
         """
-        Method to calculate mean square residue of a given submatrix at a specific start point. The idea behind this method is to make
-        the calculation reusable all throughout the algorithms.
-
-        Args:
-            start (tuple): The starting point of the submatrix. 
-            submatrix (_type_): the given bicluster matrix.
-            submatrix_mean (float): the bicluster matrix mean.
-
-        Returns:
-            float: mean square residue
-        """
-        I, J = submatrix.shape[0], submatrix.shape[1]
-        _i, _j = start
-        element = submatrix[_i, _j]
-        row_mean = (1 / J) * np.sum(submatrix[_i, :])
-        column_mean = (1 / I) * np.sum(submatrix[:, _j])
-        return (element - row_mean - column_mean + submatrix_mean) ** 2
-
-    def mean_square_residue_score(self, submatrix):
-        """ 
         Function to calculate mean square residue score of a submatrix defined as H(I,J).
-        The mean square residue score is the variance of the set of all elements in the bicluster plus the mean row variance & the mean column variance. 
+        The mean square residue score is the variance of the set of all elements in the bicluster plus the mean row variance & the mean column variance.
 
         Args:
             submatrix (_type_): submatrix : The bicluster matrix on which we want to calculate the mean square residue score.
@@ -46,69 +25,124 @@ class Biclustering:
         Returns:
             Float : The H(I,J) mean square residue score.
         """
-        n, m = submatrix.shape[0], submatrix.shape[1]
-        submatrix_mean = np.mean(submatrix)
-        msr_scores = np.zeros((n * m))
-        for i in range(n):
-            for j in range(m):
-                msr = self.mean_sqaure_residue((i, j), submatrix, submatrix_mean)
-                msr_scores[i + j] = msr
-        return (1 / (n * m)) * np.sum(msr_scores)
+        data = submatrix[rows]
+        data = data[:, cols]
 
-    def single_node_deletion(
-        self,
-        submatrix,
-    ):
-        """
-        Single node deletion algorithm from algorithms 1 of the first paper.
-        This algorithm removes a single node from the general expressions data matrix by computing and
-        evaluating the mean square residue of the submatrix per rows and columns.
-        Then eventually taking the largest score and removing the equivalent row or column. The aim of this algorithm is reduce the score of the bicluster A(IJ)
+        row_mean = np.mean(data, axis=1)
+
+        column_mean = np.mean(data, axis=0)
+        residues = (data - row_mean[:, np.newaxis] - column_mean + np.mean(data)) ** 2
+
+        matrix_msr = np.mean(residues)
+        row_msr = np.mean(residues, axis=1)
+        column_msr = np.mean(residues, axis=0)
+        return matrix_msr, row_msr, column_msr
+
+    def single_node_deletion(self, matrix, rows, cols):
+        nb_rows, nb_columns = matrix.shape
+        t_rows = []
+        t_columns = []
+        msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
+        if msr > self.sigma:
+            column_msr_max = np.argmax(column_msr)
+            row_msr_max = np.argmax(row_msr)
+
+            if row_msr[row_msr_max] > column_msr[column_msr_max]:
+                t_rows = [i for i in range(nb_rows) if i != row_msr_max]
+                t_columns = list(range(nb_columns))
+
+            if column_msr[column_msr_max] > row_msr[row_msr_max]:
+                t_rows = list(range(nb_rows))
+                t_columns = [i for i in range(nb_columns) if i != column_msr_max]
+
+        # extract the rows and columns of the first bicluster
+        return np.array(t_rows), np.array(t_columns)
+
+    def msr_col_addition(self, matrix, rows, cols):
+        odd_cols = np.array([i for i in range(matrix.shape[1]) if i not in cols])
+        _, _, column_msr = self.msr_score(matrix, rows, odd_cols)
+        return column_msr
+
+    def msr_row_addition(self, matrix, rows, cols):
+        odd_rows = np.array([i for i in range(matrix.shape[0]) if i not in rows])
+        _, row_msr, _ = self.msr_score(matrix, odd_rows, cols)
+        data = matrix[:, cols]
+        data = data[rows]
+
+        row_mean = np.mean(data, axis=1)
+        column_mean = np.mean(data, axis=0)
+        inverse_row_residues = (
+            -data + row_mean[:, np.newaxis] - column_mean + np.mean(data)
+        ) ** 2
+        inverse_row_msr = np.mean(inverse_row_residues, axis=1)
+        return row_msr, inverse_row_msr
+
+    def multiple_node_deletion(self, matrix, rows, cols):
+        data = matrix[rows]
+        data = data[:, cols]
+        nb_rows, nb_columns = data.shape
+        msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
+        previous_rows, previous_cols = np.array(rows), np.array(cols)
+        # evaluating the general score for the matrix
+
+        converged = False
+        while not converged:
+            # remove the rows with the highest msr
+            rows_to_remove = np.argwhere(row_msr > self.alpha * msr)[:, 0]
+            rows = np.array([i for i in range(nb_rows) if i not in rows_to_remove])
+            msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
+
+            if msr > self.sigma:
+                columns_to_remove = np.argwhere(column_msr > self.alpha * msr)[:, 0]
+                cols = np.array(
+                    [i for i in range(nb_columns) if i not in columns_to_remove]
+                )
+            if (
+                previous_rows.shape[0] != rows.shape[0]
+                and previous_cols.shape[0] != cols.shape[0]
+            ):
+                converged = True
+
+        return np.array(rows), np.array(
+            cols
+        )  # return the rows and columns of the new bicluster
+
+    def node_addition(self, matrix, rows, cols):
+        """Node addition of rows and columns (defined as algorithm n°3 in the CC paper)
 
         Args:
-            submatrix (submatrix): a copy of the general expressions data matrix on which the clustering is performed.
-
+            matrix (NPArray): _description_
+            rows (NPArray): _description_
+            cols (NPArray): _description_
 
         Returns:
-            updated_submatrix: the resulted sigma bicluster matrix.
+            _type_: _description_
         """
-        submatrix_mean = np.mean(submatrix)
+        previous_rows, previous_cols = np.array(rows), np.array(cols)
 
-        d_i = np.zeros(submatrix.shape[1])
-        d_j = np.zeros(submatrix.shape[0])
+        is_identical = lambda x, y: x.shape[0] == y.shape[0]
 
-        msrs = self.mean_square_residue_score(submatrix)
-        is_valid = lambda x: x > self.sigma
+        # computing the score of sigma bicluster
+        converged = False
 
-        if not is_valid(msrs):
-            return submatrix.copy()
+        while not converged:
+            _, _, msr = self.msr_score(matrix, rows, cols)
 
-        # compute all the score for rows
-        for i in range(submatrix.shape[0]):
-            for j in range(submatrix.shape[1]):
-                d_i[j] = (1 / submatrix.shape[1]) * self.mean_sqaure_residue(
-                    (i, j), submatrix, submatrix_mean
-                )
+            odd_cols_msr = self.msr_col_addition(matrix, rows, cols)
 
-        # compute the score for all columns
-        for j in range(submatrix.shape[1]):
-            for i in range(submatrix.shape[0]):
-                d_j[i] = (1 / submatrix.shape[0]) * self.mean_sqaure_residue(
-                    (i, j), submatrix, submatrix_mean
-                )
+            cols_to_add = np.argwhere(odd_cols_msr <= msr)[:, 0]
+            cols = np.concatenate([cols, cols_to_add])
 
-        # compare the larger score between the rows and the columns
-        updated_submatrix = submatrix.copy()
-        max_di, max_dj = np.argmax(d_i), np.argmax(d_j)
-        if d_i[max_di] > d_j[max_dj]:
-            print(f"Removing the {max_di}th row")
-            updated_submatrix = np.delete(submatrix, max_di, axis=0)
-        else:
-            print(f"Removing the {max_dj}th column")
-            updated_submatrix = np.delete(submatrix, max_di, axis=0)
+            _, _, msr = self.msr_score(matrix, rows, cols)
 
-        # create a new matrix with the removed rows & columns
-        return updated_submatrix
-    
-    def multiple_node_deletion(self, submatrix):
-        
+            row_msr, inverse_row_msr = self.msr_row_addition(matrix, rows, cols)
+            rows_to_add = np.argwhere(
+                np.logical_or(row_msr <= msr * msr, inverse_row_msr <= msr)
+            )[:, 0]
+            rows = np.concatenate([rows, rows_to_add])
+
+            if is_identical(previous_rows, rows) and is_identical(previous_cols, cols):
+                converged = True
+        return rows, cols
+
+    # the final algorithm number 4
