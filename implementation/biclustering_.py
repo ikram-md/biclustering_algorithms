@@ -62,6 +62,7 @@ class Biclustering:
         """
 
         data = submatrix[rows]
+
         data = data[:, cols]
 
         row_mean = np.mean(data, axis=1)[:, np.newaxis] if len(rows) > 0 else 0
@@ -69,6 +70,7 @@ class Biclustering:
         column_mean = np.mean(data, axis=0) if len(cols) > 0 else 0
 
         residues = (data - row_mean - column_mean + np.mean(data)) ** 2
+
         if inverse_msr_score:
             residues = (-data + row_mean - column_mean + np.mean(data)) ** 2
 
@@ -95,18 +97,18 @@ class Biclustering:
         """
 
         msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
-
+        
         if msr > self._sigma:
             column_msr_max = np.argmax(column_msr).flatten()
 
             row_msr_max = np.argmax(row_msr).flatten()
 
             if row_msr[row_msr_max] > column_msr[column_msr_max]:
-                rows = np.setdiff1d(rows, row_msr_max)
 
+                rows = np.delete(rows, row_msr_max)
             if column_msr[column_msr_max] > row_msr[row_msr_max]:
-                cols = np.setdiff1d(cols, column_msr_max)
 
+                cols = np.delete(cols, column_msr_max)
         # extract the rows and columns of the first bicluster
         return rows, cols
 
@@ -125,6 +127,7 @@ class Biclustering:
 
         converged = False
         while not converged:
+
             previous_rows, previous_cols = rows, cols
 
             msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
@@ -136,21 +139,20 @@ class Biclustering:
             rows_to_remove = np.argwhere(row_msr > self._alpha * msr).flatten()
 
             rows = (
-                np.setdiff1d(rows, rows_to_remove)
-                if len(np.setdiff1d(rows, rows_to_remove)) > 0
+                np.delete(rows, rows_to_remove)
+                if len(rows_to_remove) > 0
                 else rows
             )
 
             msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
-
+            
             columns_to_remove = np.argwhere(column_msr > self._alpha * msr).flatten()
-
+                        
             cols = (
-                np.setdiff1d(cols, columns_to_remove)
-                if len(np.setdiff1d(cols, columns_to_remove)) > 0
+                np.delete(cols, columns_to_remove)
+                if len(columns_to_remove) > 0
                 else cols
             )
-
             # checking if nothing has been removed
 
             if np.array_equal(previous_cols, cols) and np.array_equal(
@@ -188,7 +190,6 @@ class Biclustering:
             msr_b = self.msr_score(A_matrix, B_rows, B_cols)[0]
 
             # extract the odd columns
-
             odd_columns = np.setdiff1d(np.arange(A_matrix.shape[1]), B_cols)
             # compute msr for every column  and compare it to the msr of the bicluster in itself
             odd_columns_msr = self.msr_score(A_matrix, B_rows, odd_columns)[2]
@@ -253,6 +254,7 @@ class Biclustering:
         d_bicluster = d_bicluster[
             :, brc[1]
         ].flatten()  # extract the elements of the bicluster matrix into a numpy array
+
         # Find the indicies of the matching elements in the original matrix.
         indecies = [np.argwhere(o_matrix == el)[0] for el in d_bicluster]
         for index in indecies:
@@ -282,6 +284,7 @@ class Biclustering:
         Raises:
             ValueError: in case the attributes are not valid.
         """
+
         # clean the missing values of A by random values in range(min, max) from a normal distribution
         original_matrix = matrix.copy()
 
@@ -292,15 +295,25 @@ class Biclustering:
             B_rows, B_cols = self.multiple_node_deletion(
                 matrix, original_rows, original_cols
             )
+
             C_rows, C_cols = self.single_node_deletion(matrix, B_rows, B_cols)
+
 
             D_rows, D_cols = self.node_addition(matrix, C_rows, C_cols)
 
             bsc_msr = self.msr_score(matrix, D_rows, D_cols)
 
             bicluster = Bicluster(rows=D_rows, columns=D_cols, msr_score=bsc_msr[0])
-
+            
             self.biclusters.append(bicluster)
 
             # randomize the values in rows and columns D in A
             matrix = self.randomize_values(matrix, (D_rows, D_cols))
+
+
+    
+    
+
+    
+
+    
