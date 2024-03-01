@@ -23,7 +23,7 @@ class DataFactory:
         return row_coverage, columns_coverage
     
 
-    def write_into_csv(self, exp_index : int, biclusters, data_size : tuple):
+    def write_into_csv(self, exp_index : int, biclusters, data_size : tuple, path : str):
         """Method to write the results into a csv file for further processing by other algorithms. Does not return anything.
 
         Args:
@@ -32,7 +32,7 @@ class DataFactory:
             data_size (tuple): shape of the original bicluster matrix.
         """
         col_names = ["rows", "columns", "msr", "row_coverage", "column_coverage"]
-        path = f"./experiments/exp-{exp_index}.csv"
+        
         with open(path, "a") as f:
             writer = csv.writer(f)
 
