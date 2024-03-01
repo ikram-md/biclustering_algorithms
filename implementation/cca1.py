@@ -127,13 +127,9 @@ class Biclustering:
 
         converged = False
         while not converged:
-
             previous_rows, previous_cols = rows, cols
-
             msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
 
-            if msr <= self.sigma:
-                return rows, cols
 
             # remove the rows with the highest msr
             rows_to_remove = np.argwhere(row_msr > self._alpha * msr).flatten()
@@ -160,9 +156,6 @@ class Biclustering:
             ):
                 converged = True
                 # if nothing has been removed, then just run single node deletion
-
-        # once the algorithm converges, we run single node deletion
-        rows, cols = self.single_node_deletion(matrix, rows, cols)
 
         return rows, cols  # return the rows and columns of the new bicluster
 
@@ -305,8 +298,8 @@ class Biclustering:
             
             
             # mask the values from the original matrix
-            bicluster_shape = (len(D_rows), len(D_cols))
-            matrix[D_rows[:,np.newaxis],D_cols] = np.random.uniform(low=min_value, high=max_value, size=bicluster_shape)
+            # bicluster_shape = (len(D_rows), len(D_cols))
+            # matrix[D_rows[:,np.newaxis],D_cols] = np.random.uniform(low=min_value, high=max_value, size=bicluster_shape)
 
             bsc_msr = self.msr_score(matrix, D_rows, D_cols)
             bicluster = Bicluster(rows=D_rows, columns=D_cols, msr_score=bsc_msr[0])
@@ -314,7 +307,7 @@ class Biclustering:
             self.biclusters.append(bicluster)
 
             # randomize the values in rows and columns D in A
-            # matrix = self.randomize_values(matrix, (D_rows, D_cols))
+            matrix = self.randomize_values(matrix, (D_rows, D_cols))
 
 
     
