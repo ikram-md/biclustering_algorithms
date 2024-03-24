@@ -4,7 +4,7 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.datasets import make_blobs
 import numpy as np
 import re
-
+from .cca2 import CCA
 
 class DataFactory:
     def _preprocess_data(self, file_path: str):
@@ -37,12 +37,8 @@ class DataFactory:
         """
         # post on stack overflow
         lines = open(filepath, 'r').readlines()
-        results = []
-        i = 1
-        while i <= len(lines):
-            if i % 3 == 0:
-                results.append(lines[i-3:i+3])
-            i += 1
+        results = [lines[i-3:i] for i in range(3,300, 3)]
+
         
         # clean and write the data into a csv file
         with open(writefilepath, "a") as f:
@@ -56,11 +52,8 @@ class DataFactory:
                         [vals.append(num) for num in validstring]
                     else:
                         vals.append(s.strip())
+                    print(vals)
                 writer.writerow(vals)
-
-
-
-        
 
     def _consume_preprocess_data(self, read_file: str, write_file: str):
         """_summary_
@@ -102,7 +95,7 @@ class DataFactory:
 
         return row_coverage, columns_coverage
 
-    def write_into_csv(self, exp_index: int, biclusters, data_size: tuple, path: str):
+    def write_into_csv(self, biclusters, data_size: tuple, path: str):
         """Method to write the results into a csv file for further processing by other algorithms. Does not return anything.
 
         Args:
@@ -116,42 +109,36 @@ class DataFactory:
         with open(path, "a") as f:
             writer = csv.writer(f)
 
-            for _, bicluster in enumerate(biclusters):
+            for _, b in enumerate(biclusters):
 
-                cov_rows, cov_columns = self.bicluster_coverage(
-                    bicluster.rows, bicluster.columns, data_size)
-
-                writer.writerow([len(bicluster.rows), len(
-                    bicluster.columns), bicluster.msr_score, cov_rows, cov_columns])
+                writer.writerow([len(b.rows), len(
+                    b.columns), b.msr_score, b.rows, b.columns])
 
         pd.read_csv(path, names=col_names).to_csv(
             path, encoding="utf-8", index=False)
 
-    def measure_error(self, path1, path2):
-        """Method to measure the error between the original data and the predicted one. This method only measures the MSE score for the MSR of the generated biclusters
 
-        Args:
-            path1 (str): path of the file with true MSR values.
-            path2 (str): path of the file with predicted MSR values.
-        Returns:
-            (float): MSE score.
-        """
-        # TODO: process the rows and the columns
+            
+    def record_msr(self, path):
+        with open(path, 'r') as f:
+            for index, line in enumerate(f.readlines()):
+                orw, rows,columns, msr= line.split(',')[0], line.split(',')[4], line.split(',')[3], float(line.split(',')[2])
+                rows = rows.replace('-', ' -')
+                indices = []
+                parts = rows.split()
+                i = 0
+                while i < len(parts):
+                    if parts[i] == '-':
+                        indices.append(-int(parts[i+1]))
+                        i += 1
+                    elif parts[i].startswith('-'):
+                        indices.append(int(parts[i]))
+                    
+                    else:
+                        indices.append(int(parts[i]))
 
-        # preprocessing and parsing the data
-        df1 = pd.read_csv(
-            path1, names=['rows', "columns", 'msr', 'index_rows', 'index_cols'])
-        df2 = pd.read_csv(path2)
+                    i +=1
+                yield msr, np.array(indices, dtype=int),np.array(columns.split(), dtype=int)
+                
+                    
 
-        # sort by msr score in order to compute the error
-        df1_sorted = df1.sort_values(by='msr', ascending=False)
-        df2_sorted = df2.sort_values(by='msr', ascending=False)
-
-        # extracting the data from csv files
-        total_rows1, total_cols1, msr1 = df1_sorted['rows'].to_numpy(
-            dtype=int), df1_sorted['columns'].to_numpy(dtype=int), df1_sorted['msr'].to_numpy(dtype=float)
-        total_rows2, total_cols2, msr2 = df2_sorted['rows'].to_numpy(
-            dtype=int), df2_sorted['columns'].to_numpy(dtype=int), df2_sorted['msr'].to_numpy(dtype=float)
-
-        # return msr error rate
-        return mean_absolute_error(msr1, msr2)
