@@ -1,28 +1,35 @@
 import numpy as np
-from sklearn.datasets import make_blobs
-from implementation.biclustering_ import Biclustering
+import pandas as pd
+import os
+import time
+import pandas as pd
+
+from ccp.data_factory import DataFactory
+from ccp.cca2 import CCA
 
 
-# Testing the algorithm with guassian clusters
-toy_data_set, y_toy = make_blobs(n_samples=20, centers=3, n_features=10)
+# Yeast matrix
 
 
-toy_rows, toy_cols = toy_data_set.shape
-
-biclustering_ = Biclustering(sigma=0.3, alpha=0.5, nb_biclusters=3)
-
-print(
-    "Score of the original matrix : ",
-    biclustering_.msr_score(
-        toy_data_set,
-        np.arange(toy_rows),
-        np.arange(toy_cols),
-    )[0],
-)
+# Experiment parameters
+SIGMA = 300 #biclsuter threshold
+ALPHA =1.2 #node addition threshold
+WRITE_FILE_PATH = f"{os.getcwd()}/data/yeast_expression.csv"
+FEATURE_SIZE = 17 # fixed value for the yeast data matrix
+NB_BICLUSTERS = 100
 
 
-biclustering_.run(toy_data_set)
-for b in biclustering_.biclusters:
-    print(b.rows)
-    print(b.columns)
-    print(b.msr_score)
+cca = CCA(SIGMA, ALPHA, nb_biclusters=NB_BICLUSTERS,missingval_indicator=-1)
+data_fact = DataFactory()
+
+columns = np.array([f"Cond{i+1}" for i in range(FEATURE_SIZE)])
+df = pd.read_csv(WRITE_FILE_PATH, names=columns)
+column_names = df.columns.to_list() #extract the name of
+data = df.to_numpy()
+
+
+EXP_INDEX = 5
+cca.run(data) 
+data_fact.write_into_csv(cca.biclusters, data.shape, f"{os.getcwd()}/experiments/yeast-matrix/cca2/exp-{EXP_INDEX}.csv")
+
+
