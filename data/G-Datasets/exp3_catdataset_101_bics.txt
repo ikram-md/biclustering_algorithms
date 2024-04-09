@@ -1,0 +1,82 @@
+Number of planted biclusters: 3
+Bicluster coverage: 20.0%
+Missing values on dataset: 0.0%
+Noise values on dataset: 0.0%
+Errors on dataset: 0.0%
+
+
+Bicluster #0 (20, 20)
+Rows=[4,6,10,15,26,28,31,33,39,43,46,51,52,59,62,67,78,86,87,91], Columns=[0,2,4,8,10,12,18,23,25,26,33,34,36,37,39,46,48,53,54,59], RowPattern=Constant, ColumnPattern=None, %Missings=0, %Noise=0, %Errors=0 PlaidCoherency=No Overlapping
+
+X	y0	y2	y4	y8	y10	y12	y18	y23	y25	y26	y33	y34	y36	y37	y39	y46	y48	y53	y54	y59
+x4	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x6	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x10	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x15	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x26	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x28	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x31	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x33	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x39	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x43	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x46	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x51	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x52	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x59	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x62	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x67	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x78	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x86	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x87	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+x91	aa	aa	dd	cc	bb	cc	ee	aa	ee	dd	aa	cc	dd	aa	dd	ee	aa	ee	ee	cc
+
+Bicluster #1 (20, 20)
+Rows=[0,2,8,13,21,26,31,33,41,47,49,52,62,63,67,68,73,76,83,97], Columns=[3,5,6,7,11,13,14,16,20,21,22,27,28,31,38,49,52,55,56,58], RowPattern=Constant, ColumnPattern=None, %Missings=0, %Noise=0, %Errors=0 PlaidCoherency=No Overlapping
+
+X	y3	y5	y6	y7	y11	y13	y14	y16	y20	y21	y22	y27	y28	y31	y38	y49	y52	y55	y56	y58
+x0	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x2	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x8	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x13	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x21	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x26	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x31	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x33	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x41	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x47	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x49	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x52	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x62	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x63	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x67	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x68	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x73	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x76	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x83	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+x97	cc	dd	cc	dd	dd	dd	bb	aa	dd	aa	aa	ee	aa	dd	aa	ee	dd	aa	aa	aa
+
+Bicluster #2 (20, 20)
+Rows=[0,2,9,25,27,32,39,41,62,68,69,73,74,75,84,89,91,92,94,99], Columns=[1,9,15,17,19,24,29,30,32,35,40,41,42,43,44,45,47,50,51,57], RowPattern=Constant, ColumnPattern=None, %Missings=0, %Noise=0, %Errors=0 PlaidCoherency=No Overlapping
+
+X	y1	y9	y15	y17	y19	y24	y29	y30	y32	y35	y40	y41	y42	y43	y44	y45	y47	y50	y51	y57
+x0	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x2	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x9	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x25	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x27	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x32	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x39	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x41	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x62	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x68	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x69	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x73	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x74	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x75	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x84	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x89	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x91	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x92	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x94	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+x99	ee	ee	cc	cc	ee	dd	dd	aa	cc	aa	cc	cc	aa	aa	aa	dd	aa	bb	ee	aa
+
