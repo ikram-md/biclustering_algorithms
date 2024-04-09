@@ -1,0 +1,70 @@
+Inside multiple node deletion
+current columns [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16]
+columns to remove [0 1 2 9]
+Result of the difference [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+Inside multiple node deletion
+current columns [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16]
+columns to remove [0 1 2 9]
+Result of the difference [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+Inside multiple node deletion
+current columns [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+columns to remove [1]
+Result of the difference [ 3  5  6  7  8 10 11 12 13 14 15 16]
+Inside multiple node deletion
+current columns [ 3  5  6  7  8 10 11 12 13 14 15 16]
+columns to remove [ 3 10]
+Result of the difference [ 3  5  6  8 10 11 12 13 14 16]
+Inside multiple node deletion
+current columns [ 3  5  6  8 10 11 12 13 14 16]
+Step : Single node deletion
+Inside multiple node deletion
+current columns [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16]
+columns to remove [0 1 2 9]
+Result of the difference [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+Inside multiple node deletion
+current columns [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+columns to remove [ 1 11]
+Result of the difference [ 3  5  6  7  8 10 11 12 13 14 16]
+Inside multiple node deletion
+current columns [ 3  5  6  7  8 10 11 12 13 14 16]
+columns to remove [3]
+Result of the difference [ 3  5  6  8 10 11 12 13 14 16]
+Inside multiple node deletion
+current columns [ 3  5  6  8 10 11 12 13 14 16]
+Step : Single node deletion
+Time taken to generated 5 biclusters : 2.1463193893432617
+
+=============================================================
+ITERANTE N° 0
+Inside multiple node deletion
+current columns [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16]
+columns to remove [0 1 2 9]
+Result of the difference [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+Inside multiple node deletion
+current columns [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+columns to remove [1]
+Result of the difference [ 3  5  6  7  8 10 11 12 13 14 15 16]
+Inside multiple node deletion
+current columns [ 3  5  6  7  8 10 11 12 13 14 15 16]
+columns to remove [ 3 10]
+Result of the difference [ 3  5  6  8 10 11 12 13 14 16]
+Inside multiple node deletion
+current columns [ 3  5  6  8 10 11 12 13 14 16]
+Step : Single node deletion
+ITERANTE N° 1
+Inside multiple node deletion
+current columns [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16]
+columns to remove [0 1 2 9]
+Result of the difference [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+Inside multiple node deletion
+current columns [ 3  4  5  6  7  8 10 11 12 13 14 15 16]
+columns to remove [ 1 11]
+Result of the difference [ 3  5  6  7  8 10 11 12 13 14 16]
+Inside multiple node deletion
+current columns [ 3  5  6  7  8 10 11 12 13 14 16]
+columns to remove [3]
+Result of the difference [ 3  5  6  8 10 11 12 13 14 16]
+Inside multiple node deletion
+current columns [ 3  5  6  8 10 11 12 13 14 16]
+Step : Single node deletion
+Time taken to generated 5 biclusters : 2.849581718444824

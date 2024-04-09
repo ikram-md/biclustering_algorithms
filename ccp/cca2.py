@@ -8,15 +8,23 @@ class CCA:
         self,
         sigma: float,
         alpha: float,
-        missingval_indicator : int,
+        min,
+        max,
+
+        missingval_indicator: int,
+        row_thr: int,
+        col_thr: int,
         nb_biclusters: int = 3,
     ) -> tuple:
         self._nb_biclusters = nb_biclusters
         self._sigma = sigma
         self._alpha = alpha
         self.biclusters = []
-        self.rows_col_thr = 100
+        self.cols_thr = col_thr
+        self.row_thr = row_thr
         self.missingval_indicator = missingval_indicator
+        self.min = min
+        self.max = max
 
     # validating the attributes
     @property
@@ -29,13 +37,6 @@ class CCA:
             raise ValueError("Sigma value must be positive")
         self._sigma = value
 
-
-    @alpha.setter
-    def alpha(self, alpha):
-        if alpha <= 0:
-            raise ValueError("Alpha value must be strictly positive")
-        self._alpha = alpha
-
     @property
     def nb_biclusters(
         self,
@@ -45,10 +46,48 @@ class CCA:
     @nb_biclusters.setter
     def nb_biclusters(self, nb_biclusters):
         if nb_biclusters > 50:
-            raise ValueError("Number of biclusters must not be greater than 50")
+            raise ValueError(
+                "Number of biclusters must not be greater than 50")
         self._nb_biclusters = nb_biclusters
 
+    def randomize_values_normal(self, o_matrix, brc: tuple):
+        """Replaces the elements of the bicluster with random values in the original matrix A'.
+        The random values are drawn from a normal distribution with mean : mean of the attribute (column in bicluster D) and std : std of the same attribute (column).
 
+
+        Args:
+            o_matrix (NDArray): Original matrix A' (as denoted in step D in the cc algorithm).
+            brc (tuple): A tuple (NDArray,NDArray) representing the rows & columns of bicluster D.
+        Returns:
+            A reset of the original matrix A'  (please refer to step 4 in Algorithm 4 page = 7 of the CC paper.)
+        """
+
+        # NOTE: For this example we will suppose that the matrix is already normalized
+        d_bicluster = o_matrix[brc[0], :]
+        d_bicluster = d_bicluster[
+            :, brc[1]
+        ].flatten()  # extract the elements of the bicluster matrix into a numpy array
+
+        # Find the indicies of the matching elements in the original matrix.
+        indecies = [np.argwhere(o_matrix == el)[0] for el in d_bicluster]
+        for index in indecies:
+            # Find the column corresponding to the matching element
+
+            r, c = index
+
+            # extract the column from the orginal matrix
+            attribute = o_matrix[:, c]
+
+            attribute_mean = np.mean(attribute)
+
+            attribute_std = np.std(attribute)
+
+            # Generate a random value w.r.t the normally distributed attribute
+            o_matrix[r, c] = np.random.normal(
+                loc=attribute_mean, scale=attribute_std
+            )
+
+        return o_matrix
 
     def handle_missing_values(self, matrix, missingval_indicator):
         """Function that handles replacing the missing values by sampling from a uniform distribution on every attribute.
@@ -63,33 +102,33 @@ class CCA:
         for rind, colind in args:
             col = matrix[:, colind]
 
-            filteredcol = col[col != missingval_indicator]
+            matrix[rind, colind] = np.random.uniform(self.min, self.max)
 
-            colmin, colmax = np.min(filteredcol), np.max(filteredcol)
-            matrix[rind, colind] = np.random.uniform(colmin, colmax)
-
-    def _base_msr_score(self, submatrix, row_indices, col_indices): 
+    def _base_msr_score(self, submatrix, row_indices, col_indices):
         # handling inv residues
         inv_rows = np.where(row_indices < 0)[0]
         data = submatrix[row_indices][:, col_indices]
         data_mean = np.mean(data)
         column_mean = np.mean(data, axis=0)
 
-
         if len(inv_rows) > 0:
-            inv_data_rows = submatrix[np.absolute(row_indices[inv_rows])][:, col_indices]
+            inv_data_rows = submatrix[np.absolute(
+                row_indices[inv_rows])][:, col_indices]
             inv_row_mean = np.mean(inv_data_rows, axis=1)[:, np.newaxis]
-            inv_residues = (-inv_data_rows + inv_row_mean - column_mean + data_mean)**2
+            inv_residues = (-inv_data_rows + inv_row_mean -
+                            column_mean + data_mean)**2
 
         pos_rows = np.where(row_indices > 0)[0]
-        posrows_data = submatrix[row_indices[pos_rows]][:,col_indices]
+        posrows_data = submatrix[row_indices[pos_rows]][:, col_indices]
         posrows_mean = np.mean(posrows_data, axis=1)[:, np.newaxis]
-        pos_residues = (posrows_data - posrows_mean - column_mean + data_mean)**2
+        pos_residues = (posrows_data - posrows_mean -
+                        column_mean + data_mean)**2
 
-        residues = np.concatenate((pos_residues, inv_residues), axis=0) if len(inv_rows) > 0 else pos_residues
-        
-        #return msr_score, row_msr, column_msr
-        return np.mean(residues), np.mean(residues, axis=1) , np.mean(residues, axis=0)
+        residues = np.concatenate((pos_residues, inv_residues), axis=0) if len(
+            inv_rows) > 0 else pos_residues
+
+        # return msr_score, row_msr, column_msr
+        return np.mean(residues), np.mean(residues, axis=1), np.mean(residues, axis=0)
 
     def msr_score(self, submatrix, rows, cols):
         """
@@ -107,7 +146,6 @@ class CCA:
 
         return self._base_msr_score(submatrix, row_indices, col_indices)
 
-        
     def single_node_deletion(self, matrix, rows, cols):
         """Single node deletion algorithm. Defined as the second algorithm in the CC paper (2000). The goal of this algorithm
         is to delete the row I or the column J with the highest mean square residue score.
@@ -121,7 +159,6 @@ class CCA:
         Returns:
             Tuple of rows & columns : Updated sigma bicluster matrix
         """
-
 
         _, row_msr, column_msr = self.msr_score(matrix, rows, cols)
 
@@ -139,6 +176,22 @@ class CCA:
             columns_to_drop = col_indices[column_msr_max]
             cols[columns_to_drop] = False
 
+    def reconstruct_bicluster(self, rows, t_columns, offset: int, nb_cats: int, nb_att: int):
+
+        # order the columns and the rows
+        rows = np.sort(rows,)
+        t_columns = np.sort(t_columns)
+
+        # find only the categorical columns by removing the offset
+        num_cols = t_columns[np.where(t_columns < offset)[0]]
+        cat_cols = np.sort(t_columns[np.where(t_columns > offset)[0]])
+        codes_map = np.arange(offset, 180).reshape(nb_att, nb_cats)
+
+        positions, _ = np.where(np.isin(codes_map, cat_cols))
+
+        decoded_columns = np.concatenate((num_cols, positions + offset))
+
+        return rows, decoded_columns
 
     def multiple_node_deletion(self, matrix, rows, cols):
         """
@@ -154,44 +207,40 @@ class CCA:
             Tuple: (Rows, Columns) : Updated sigma bicluster matrix.
         """
 
-        # verifying if row/cols threshold = 100
-        print(len(rows), len(cols))
-        if len(rows) < self.rows_col_thr and len(cols) < self.rows_col_thr : return 
-
-
-        msr= self.msr_score(matrix, rows, cols)[0]
+        msr = self.msr_score(matrix, rows, cols)[0]
 
         converged = False
         while msr > self.sigma and not converged:
-
             previous_rows, previous_cols = np.copy(rows), np.copy(cols)
-            msr, row_msr, column_msr= self.msr_score(matrix, rows, cols)
-
-            # remove the rows with the highest msr
-            rows_indices = np.nonzero(rows)[0]
-            rows_to_remove = rows_indices[np.argwhere(row_msr > self._alpha * msr).flatten()]
-            rows[rows_to_remove] = False
-            
-            #IMPORTANT STEP: recompute the msr after deleting the rows.
             msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
 
+            if len(np.nonzero(rows)) >= self.row_thr:
+                # remove the rows with the highest msr
+                rows_indices = np.nonzero(rows)[0]
+                rows_to_remove = rows_indices[np.argwhere(
+                    row_msr > self._alpha * msr).flatten()]
+                rows[rows_to_remove] = False
 
-            # remove the columns with the highest msr
-            bicluster_columns = np.nonzero(cols)[0]
-            columns_to_remove = bicluster_columns[np.argwhere(column_msr > self._alpha * msr).flatten()]
-            
-            if len(columns_to_remove) > 0:
-                cols[columns_to_remove] = False 
-                
-                msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
+            # this routine shall be ran only if the number of columns in higher than the threshold
+
+            # IMPORTANT STEP: recompute the msr after deleting the rows.
+            msr, row_msr, column_msr = self.msr_score(matrix, rows, cols)
+            if len(np.nonzero(cols)) >= self.cols_thr:
+                bicluster_columns = np.nonzero(cols)[0]
+                columns_to_remove = bicluster_columns[np.argwhere(
+                    column_msr > self._alpha * msr).flatten()]
+
+                if len(columns_to_remove) > 0:
+                    cols[columns_to_remove] = False
+
+                    msr, row_msr, column_msr = self.msr_score(
+                        matrix, rows, cols)
 
             # checking if nothing has been removed
-            if np.array_equal(np.sort(previous_cols), np.sort(cols)) and np.array_equal(
-                np.sort(previous_rows), np.sort(rows)
-            ):
+            if (np.array_equal(np.sort(previous_cols), np.sort(cols)) and np.array_equal(
+                        np.sort(previous_rows), np.sort(rows))
+                    ):
                 converged = True
-
-
 
     def _col_addition_msr(self, matrix, rows, cols, msr_bij):
         """
@@ -209,62 +258,62 @@ class CCA:
         row_indices, col_indices = np.nonzero(rows)[0], np.nonzero(cols)[0]
         odd_cols = np.setdiff1d(np.arange(matrix.shape[1]), col_indices)
 
-        oddcols_data = matrix[row_indices][:,odd_cols]
+        oddcols_data = matrix[row_indices][:, odd_cols]
         data_rows = matrix[row_indices][:, col_indices]
         row_mean = np.mean(data_rows, axis=1)
 
         column_mean = np.mean(oddcols_data, axis=0)
-        column_rs = (oddcols_data - row_mean[:, np.newaxis] - column_mean + np.mean(data_rows)) ** 2
-        
+        column_rs = (
+            oddcols_data - row_mean[:, np.newaxis] - column_mean + np.mean(data_rows)) ** 2
+
         # augment the columns based on the condition
 
         cols2add = np.argwhere(np.mean(column_rs, axis=0) <= msr_bij).flatten()
-        if (len(cols2add) >  0):
+        if (len(cols2add) > 0):
             cols[cols2add] = True
 
-
-
     def _row_addition_msr(self, matrix, rows, columns, msr_bij):
-        
+
         row_indices, col_indices = np.nonzero(rows)[0], np.nonzero(columns)[0]
-        
-        data = matrix[row_indices][:,col_indices]
+
+        data = matrix[row_indices][:, col_indices]
         matrix_mean = np.mean(data)
 
         data_columns = matrix[:, col_indices]
         oddrows = np.setdiff1d(np.arange(matrix.shape[0]), row_indices)
 
         oddrows_data = matrix[oddrows][:, col_indices]
-        row_mean = np.mean(oddrows_data, axis=1)[:, np.newaxis] 
+        row_mean = np.mean(oddrows_data, axis=1)[:, np.newaxis]
         column_mean = np.mean(data_columns, axis=0)
 
         rows_rs = (oddrows_data - row_mean - column_mean + matrix_mean) ** 2
         rows_msr = np.mean(rows_rs, axis=1)
 
-        # Update the set of the rows : i \in I 
+        # Update the set of the rows : i \in I
         rows2add = np.argwhere(rows_msr <= msr_bij).flatten()
         rows[rows2add] = True
 
         # for i still not in I add the inverse rows
         row_indices = np.nonzero(rows)[0]
-        
+
         inv_oddrows = np.setdiff1d(np.arange(matrix.shape[0]), row_indices)
         inv_row_data = matrix[inv_oddrows][:, col_indices]
-        inv_row_mean=np.mean(inv_row_data, axis=1)[:, np.newaxis]
+        inv_row_mean = np.mean(inv_row_data, axis=1)[:, np.newaxis]
         inv_col_mean = np.mean(matrix[row_indices][:, col_indices], axis=0)
 
         # compute the inverse residue score
-        inv_residues = (-inv_row_data +inv_row_mean -inv_col_mean +matrix_mean)**2
-        inv_rows_msr =np.mean(inv_residues, axis=1)
+        inv_residues = (-inv_row_data + inv_row_mean -
+                        inv_col_mean + matrix_mean)**2
+        inv_rows_msr = np.mean(inv_residues, axis=1)
 
-        #extract inv rows to be added 
+        # extract inv rows to be added
         invrows2add = np.argwhere(inv_rows_msr <= msr_bij).flatten()
         rows[invrows2add] = True
 
-        #save the shape of the rows with the inverse version
+        # save the shape of the rows with the inverse version
         totalrows_indices = np.concatenate((rows2add, -1*invrows2add), axis=0)
-        return totalrows_indices 
 
+        return totalrows_indices
 
     def node_addition(self, data_matrix, rows, cols):
         """Node addition method which is described as Algorithm n°3 in the CC paper. Page 6. The goal of this step is to maximize the bicluster size
@@ -283,11 +332,10 @@ class CCA:
         totalrows, totalcols = np.nonzero(rows)[0], np.nonzero(cols)[0]
         converged = False
         while self.msr_score(data_matrix, rows, cols)[0] <= self.sigma and not converged:
-            
-            prev_rows,prev_cols = np.copy(rows), np.copy(cols)
+            prev_rows, prev_cols = np.copy(rows), np.copy(cols)
             msr = self.msr_score(data_matrix, rows, cols)[0]
 
-            # column addition 
+            # column addition
             self._col_addition_msr(data_matrix, rows, cols, msr)
             msr = self.msr_score(data_matrix, rows, cols)[0]
 
@@ -295,15 +343,18 @@ class CCA:
             totalrows = self._row_addition_msr(data_matrix, rows, cols, msr)
             totalcols = np.nonzero(cols)[0]
 
+            msr = self.msr_score(data_matrix, rows, cols)[0]
+            if msr > self.sigma:
+                break
+
             # check if the rows and columns are the same
-            unchanged = True if np.array_equal(np.sort(rows), np.sort(prev_rows)) and np.array_equal(np.sort(cols), np.sort(prev_cols)) else False
-            
+            unchanged = True if np.array_equal(np.sort(rows), np.sort(
+                prev_rows)) and np.array_equal(np.sort(cols), np.sort(prev_cols)) else False
+
             if unchanged:
                 converged = True
                 msr = self.msr_score(data_matrix, rows, cols)[0]
         return totalrows, totalcols
-        
-
 
     def run(self, matrix):
         """Method to run the biclustering algorithm in order to generate the n number of biclusters.
@@ -314,48 +365,35 @@ class CCA:
         Raises:
             ValueError: in case the attributes are not valid.
         """
-        
-        
+
         # clean the missing values of A by random values in range(min, max) from a normal distribution
+
         self.handle_missing_values(matrix, self.missingval_indicator)
 
         original_matrix = matrix.copy()
-        
-        #extract min and max values of the matrix to take samples for randomiziation
-        min_val = np.min(matrix)
-        max_val = np.max(matrix)
 
         size_rows, size_cols = original_matrix.shape
-        for i in range(self._nb_biclusters):
-           
-            print(f'Bicluster {i+1}')
-            rows, cols = np.ones(size_rows, dtype=bool), np.ones(size_cols, dtype=bool)
+        for _ in range(self._nb_biclusters):
+
+            rows, cols = np.ones(size_rows, dtype=bool), np.ones(
+                size_cols, dtype=bool)
             self.multiple_node_deletion(
                 matrix, rows, cols
             )
             self.single_node_deletion(matrix, rows, cols)
+            finalrows, finalcols = self.node_addition(
+                original_matrix, rows, cols)
 
-            print(f"MSR after Single + Multiple node deletion: = {self.msr_score(original_matrix, rows, cols)[0]}")
-            # here we are saving the indices of the final rows and columns 
-            # finalrows, finalcols = self.node_addition(original_matrix, rows, cols)
-            finalrows, finalcols = np.nonzero(rows)[0], np.nonzero(cols)[0]
+            # finalrows, finalcols = np.nonzero(rows)[0], np.nonzero(cols)[0]
             # check if there aren't any new biclusters that are being discovered
             if len(finalrows) == 0 or len(finalcols) == 0:
                 break
-            
-            bicluster = Bicluster(rows=finalrows, columns=finalcols, msr_score=self.msr_score(original_matrix, rows, cols)[0])
+            bicluster = Bicluster(rows=finalrows, columns=finalcols,
+                                  msr_score=self.msr_score(matrix, rows, cols)[0])
 
-            # mask the discovered bicluster
             # in this step we need the mask the values but we need to pick from a uniform distribution
             bicluster_shape = (len(finalrows), len(finalcols))
-            matrix[finalrows[:, np.newaxis], finalcols] = np.random.uniform(low=min_val, high=max_val, size=bicluster_shape)
-            
+
+            matrix[finalrows[:, np.newaxis], finalcols] = np.random.uniform(
+                low=self.min, high=self.max, size=bicluster_shape)
             self.biclusters.append(bicluster)
-
-
-    
-    
-
-    
-
-    

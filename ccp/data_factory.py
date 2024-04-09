@@ -95,7 +95,7 @@ class DataFactory:
 
         return row_coverage, columns_coverage
 
-    def write_into_csv(self, biclusters, data_size: tuple, path: str):
+    def write_into_csv(self, biclusters, path: str):
         """Method to write the results into a csv file for further processing by other algorithms. Does not return anything.
 
         Args:

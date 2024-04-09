@@ -103,7 +103,6 @@ class Biclustering:
         if column_msr[column_msr_max] > row_msr[row_msr_max]:
             cols = np.delete(cols, column_msr_max)
         
-        print(f"Bicluster at Single node deletion score : {msr}")
 
         # extract the rows and columns of the first bicluster
         return rows, cols
@@ -144,7 +143,7 @@ class Biclustering:
                 np.sort(previous_rows), np.sort(rows)
             ):
                 changed = False # if nothing has been removed, then just run single node deletion - this will break us out of the loop
-        print(f"Bicluster at Multiple node deletion score : {msr}")
+
         return rows, cols  # return the rows and columns of the new bicluster
 
     def _node_addition_msr_columns(self, matrix, rows, columns, msr_bij):
@@ -190,7 +189,8 @@ class Biclustering:
         all_rowstoadd = np.concatenate((rows_to_add, inv_rows_to_beadded))
 
         return np.sort(np.concatenate((rows, all_rowstoadd)))
-            
+
+
 
     # this function is supposed to decrease the score at every subroutine 
     # the msr value should always decrease
@@ -222,8 +222,8 @@ class Biclustering:
             ):
                 converged = True
             
-        print("Bicluster score at Node addition :", msr)
         return rows, columns
+
 
 
 
