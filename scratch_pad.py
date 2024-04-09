@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
 import time
-from implementation.cca1 import Biclustering
-from implementation.cca2 import CCA
+from ccp.cca1 import Biclustering
+from ccp.cca2 import CCA
 
-from implementation.data_factory import DataFactory
+from ccp.data_factory import DataFactory
 
 
 #     I have reviewed the 3 files changed
@@ -34,4 +34,4 @@ def cc_experiment(results_path : str, exp_index : int, implementation):
 
 
 cc_experiment('./experiments/cca1', 13, Biclustering)
-# cc_experiment('./experiments/cca2', 12, CCA)
+# cc_experiment('./experiments/cca2', 12, CCA)human_b_exp
